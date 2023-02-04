@@ -1,7 +1,7 @@
 import { useState } from 'react';
+import Input from './Input';
 
 const FloatModal = ({ setIsEnable }) => {
-    const [isCloseModal, setIsCloseModal] = useState(false);
     return (
         <div className="h-screen w-full bg-transparent flex fixed items-center justify-center">
             <div className="h-[80%] w-96 bg-gray-400 p-4 rounded-xl">
@@ -11,13 +11,13 @@ const FloatModal = ({ setIsEnable }) => {
                         X
                     </h1>
                 </div>
-                <div className="mt-4 flex flex-col">
-                    <label>Title</label>
-                    <input type="text"></input>
-                    <label>Date</label>
-                    <input type="datetime-local"></input>
-                    <label>Description</label>
-                    <input type="text"></input>
+                <div className="mt-4">
+                    <Input title="Title" type="text" />
+                    <Input title="Date" type="datetime-local" />
+                    <Input title="Description" type="textarea" className="h-[100px]" />
+                    <button className="w-full rounded-md bg-purple-600 p-2 text-white text-lg hover:bg-purple-700">
+                        Save
+                    </button>
                 </div>
             </div>
         </div>

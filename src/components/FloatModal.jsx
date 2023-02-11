@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { addTask } from '../redux/taskSlice';
 
 import Input from './Input';

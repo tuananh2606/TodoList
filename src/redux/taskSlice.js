@@ -4,7 +4,26 @@ export const taskSlice = createSlice({
     name: 'task',
     initialState: [
         {
+            id: 't-1',
             title: 'Quet nha',
+            dateTime: '2001',
+            describe: 'Test',
+        },
+        {
+            id: 't-2',
+            title: 'Quet nha1',
+            dateTime: '2001',
+            describe: 'Test',
+        },
+        {
+            id: 't-3',
+            title: 'Quet nha2',
+            dateTime: '2001',
+            describe: 'Test',
+        },
+        {
+            id: 't-4',
+            title: 'Quet nha3',
             dateTime: '2001',
             describe: 'Test',
         },
@@ -22,10 +41,13 @@ export const taskSlice = createSlice({
             };
             state.push(newTask);
         },
+        deleteTask: (state, action) => {
+            state.splice(action.payload, 1);
+        },
     },
 });
 
 // Action creators are generated for each case reducer function
-export const { addTask } = taskSlice.actions;
+export const { addTask, deleteTask } = taskSlice.actions;
 
 export default taskSlice.reducer;

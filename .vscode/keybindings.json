@@ -1,0 +1,5 @@
+{
+    "key": "alt + w",
+    "command": "extension.wrapTag",
+    "when": "editorTextFocus"
+}

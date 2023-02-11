@@ -5,10 +5,12 @@ const CardList = () => {
     const tasks = useSelector((state) => state.task);
     console.log(tasks);
     return (
-        <div className="">
+        <div>
             <h1 className="text-3xl mb-4">Tasks</h1>
-            <div className="grid gap-2 grid-cols-4">
-                {tasks && tasks.length > 0 && tasks.map((task, index) => <Card task={task} key={index} />)}
+            <div className="grid gap-2 grid-rows-4">
+                {tasks &&
+                    tasks.length > 0 &&
+                    tasks.map((task, index) => <Card task={task} key={task.id} index={index} />)}
             </div>
         </div>
     );

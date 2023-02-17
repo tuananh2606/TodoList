@@ -1,47 +1,148 @@
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import CardList from './components/CardList';
+import { useState, useEffect } from 'react';
 import SideBar from './components/SideBar';
 import FloatModal from './components/FloatModal';
 import Column from './components/Column';
 import { DragDropContext } from 'react-beautiful-dnd';
+import initialData from './initialData';
+import StorageUtils from './helpers/StorageUtils';
+
+const reorderColumn = (sourceCol, startIndex, endIndex, destinationCol) => {
+    const newTaskIds = Array.from(sourceCol.taskIds);
+    const [removed] = newTaskIds.splice(startIndex, 1);
+
+    if (destinationCol) {
+        const newColumTaskIds = Array.from(destinationCol.taskIds);
+        newColumTaskIds.splice(endIndex, 0, removed);
+        const prevColumn = {
+            ...sourceCol,
+            taskIds: newTaskIds,
+        };
+        const newColumn = {
+            ...destinationCol,
+            taskIds: newColumTaskIds,
+        };
+        return { newColumn, prevColumn };
+    } else {
+        newTaskIds.splice(endIndex, 0, removed);
+        const newColumn = {
+            ...sourceCol,
+            taskIds: newTaskIds,
+        };
+        return newColumn;
+    }
+};
+function useLocalStorage(key) {
+    const [state, setState] = useState(localStorage.getItem(key));
+    function setStorage(item) {
+        localStorage.setItem(key, item);
+        setState(item);
+    }
+    return [state, setStorage];
+}
 
 function App() {
+    if (!localStorage.hasOwnProperty('test')) {
+        StorageUtils.setItem('test', JSON.stringify(initialData));
+    }
+    const tasks = JSON.parse(StorageUtils.getItem('test'));
     const [isEnable, setIsEnable] = useState(false);
-    const tasks = useSelector((state) => state.task);
-    const [taskOrder, setTaskOrder] = useState(tasks);
+    const [taskOrder, setTaskOrder] = useState(tasks || {});
+    const [tasksTest, setTasks] = useState();
+    const [tasksUpdate, setTaskUpdate] = useState();
+    const [item, setItem] = useLocalStorage('test');
 
-    const initalColumn = ['col-1'];
+    useEffect(() => {
+        if (tasksTest !== undefined) {
+            const jsonState = JSON.stringify(tasksTest);
+            setItem(jsonState);
+        }
+    }, [tasksTest]);
+
+    useEffect(() => {
+        const data = JSON.parse(item);
+        setTaskOrder(data);
+    }, [item]);
 
     const onDragEnd = (result) => {
         //Reorder column
-        if (!result.destination) return;
+        const { source, destination, draggableId } = result;
+        if (!destination) return;
+        if (source.droppableId === destination.droppableId && source.index === destination.index) return;
 
-        const items = Array.from(taskOrder);
-        const [reorderedItem] = items.splice(result.source.index, 1);
-        items.splice(result.destination.index, 0, reorderedItem);
+        const sourceCol = taskOrder.columns[source.droppableId];
+        const destinationCol = taskOrder.columns[destination.droppableId];
 
-        setTaskOrder(items);
-        console.log(result);
+        if (sourceCol.id === destinationCol.id) {
+            const newColumn = reorderColumn(sourceCol, source.index, destination.index);
+            const newState = {
+                ...taskOrder,
+                columns: {
+                    ...taskOrder.columns,
+                    [newColumn.id]: newColumn,
+                },
+            };
+            setTaskOrder(newState);
+            const jsonState = JSON.stringify(newState);
+            localStorage.setItem('data', jsonState);
+            setItem(jsonState);
+            return;
+        }
+
+        const newData = reorderColumn(sourceCol, source.index, destination.index, destinationCol);
+        const { newColumn, prevColumn } = newData;
+        const newState = {
+            ...taskOrder,
+            columns: {
+                ...taskOrder.columns,
+                [prevColumn.id]: prevColumn,
+                [newColumn.id]: newColumn,
+            },
+        };
+
+        setTaskOrder(newState);
+        const jsonState = JSON.stringify(newState);
+        localStorage.setItem('data', jsonState);
+        setItem(jsonState);
+        return;
     };
+
+    console.log(tasksUpdate);
 
     return (
         <div className="flex justify-between">
             <SideBar />
             <div className=" p-3 w-[calc(100%-192px)]">
                 <button
-                    className="bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-500 float-right"
+                    className="bg-purple-600 w-full mt-2 text-white p-2 rounded-lg hover:bg-purple-500"
                     onClick={() => setIsEnable((prev) => !prev)}
                 >
                     Add new task
                 </button>
-                {/* <CardList /> */}
-                {isEnable && <FloatModal setIsEnable={setIsEnable} />}
+                {isEnable && (
+                    <FloatModal
+                        setIsEnable={setIsEnable}
+                        setTasks={setTasks}
+                        taskOrder={taskOrder}
+                        setTaskUpdate={setTaskUpdate}
+                        title="Add a task"
+                    />
+                )}
                 <DragDropContext onDragEnd={onDragEnd}>
                     <div className="flex">
-                        {initalColumn.map((columnId, index) => (
-                            <Column columnId={columnId} key={index} />
-                        ))}
+                        {taskOrder.columnOrder.map((columnId) => {
+                            const column = taskOrder.columns[columnId];
+                            const tasks = column.taskIds.map((taskId) => taskOrder.tasks[taskId]);
+
+                            return (
+                                <Column
+                                    key={column.id}
+                                    column={column}
+                                    tasks={tasks}
+                                    taskOrder={taskOrder}
+                                    setItem={setItem}
+                                />
+                            );
+                        })}
                     </div>
                 </DragDropContext>
             </div>

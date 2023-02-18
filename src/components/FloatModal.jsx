@@ -1,37 +1,45 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import Input from './Input';
-const FloatModal = ({ setIsEnable, columnId, setTasks, taskOrder, title, task, isEditing, setTaskUpdate }) => {
-    // const [input, setInput] = useState(task.content);
+import StorageUtils from '../helpers/StorageUtils';
+const FloatModal = ({ setIsEnable, setTasks, taskOrder, title, task, isEditing, setEditing }) => {
+    const [input, setInput] = useState(task?.content !== undefined ? task.content : '');
     const addTask = (data) => {
         let idCount = Object.keys(taskOrder.tasks).length + 1;
         let idTask = `task-${idCount++}`;
         const newTask = {
             id: idTask,
             content: data.Description,
+            date: data.Date,
         };
         taskOrder.tasks[idTask] = newTask;
         taskOrder.columns['column-1'].taskIds = [...taskOrder.columns['column-1'].taskIds, idTask];
         return taskOrder;
     };
+
+    const updateTask = (data) => {
+        taskOrder.tasks[task.id].id = task.id;
+        taskOrder.tasks[task.id].content = data.Description;
+        taskOrder.tasks[task.id].date = data.Date;
+        return taskOrder;
+    };
+
     const {
         register,
         handleSubmit,
         formState: { errors },
     } = useForm();
 
-    // const handleChange = (e) => {
-    //     setInput(e.target.value);
-    // };
-    // console.log(input);
     const onSubmit = (data) => {
-        // if (isEditing) {
-        //     const id = task.id;
-        //     setTaskUpdate({ data, id: task.id });
-        // }
         const tasks = addTask(data);
         setTasks(tasks);
         setIsEnable(false);
+    };
+    const onSubmitUpdate = (data) => {
+        const updatedTask = updateTask(data);
+        StorageUtils.setItem('test', JSON.stringify(updatedTask));
+        setIsEnable(false);
+        setEditing(false);
     };
 
     return (
@@ -47,13 +55,14 @@ const FloatModal = ({ setIsEnable, columnId, setTasks, taskOrder, title, task, i
                     <div className="mt-4">
                         <form onSubmit={handleSubmit(onSubmit)}>
                             {/* <Input label="Title" type="text" register={register} required /> */}
-                            {/* <Input label="Date" type="datetime-local" register={register} required /> */}
+
                             <label>Description</label>
                             <textarea
                                 title="Description"
                                 className="h-[100px] w-full mt-1"
                                 {...register('Description', {})}
                             />
+                            <Input label="Date" type="datetime-local" register={register} required />
                             <input
                                 className="w-full rounded-md p-2 bg-purple-600 hover:bg-purple-700 text-white text-lg"
                                 type="submit"
@@ -72,15 +81,19 @@ const FloatModal = ({ setIsEnable, columnId, setTasks, taskOrder, title, task, i
                         </h1>
                     </div>
                     <div className="mt-4">
-                        <form onSubmit={handleSubmit(onSubmit)}>
+                        <form onSubmit={handleSubmit(onSubmitUpdate)}>
                             {/* <Input label="Title" type="text" register={register} required /> */}
-                            {/* <Input label="Date" type="datetime-local" register={register} required /> */}
+
                             <label>Description</label>
                             <textarea
                                 title="Description"
+                                value={input}
                                 className="h-[100px] w-full mt-1"
-                                {...register('Description', {})}
+                                {...register('Description', {
+                                    onChange: (e) => setInput(e.target.value),
+                                })}
                             />
+                            <Input label="Date" type="datetime-local" register={register} required />
                             <input
                                 className="w-full rounded-md p-2 bg-purple-600 hover:bg-purple-700 text-white text-lg"
                                 type="submit"

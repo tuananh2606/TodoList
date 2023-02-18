@@ -44,7 +44,13 @@ const Column = (props) => {
                 </Droppable>
             </div>
             {isEnable && (
-                <FloatModal setIsEnable={setIsEnable} taskOrder={taskOrder} isEditing={isEditing} task={task} />
+                <FloatModal
+                    setIsEnable={setIsEnable}
+                    taskOrder={taskOrder}
+                    isEditing={isEditing}
+                    task={task}
+                    setEditing={setEditing}
+                />
             )}
         </>
     );

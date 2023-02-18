@@ -5,6 +5,8 @@ import Column from './components/Column';
 import { DragDropContext } from 'react-beautiful-dnd';
 import initialData from './initialData';
 import StorageUtils from './helpers/StorageUtils';
+import axios from 'axios';
+import api from './services/api';
 
 const reorderColumn = (sourceCol, startIndex, endIndex, destinationCol) => {
     const newTaskIds = Array.from(sourceCol.taskIds);
@@ -48,7 +50,6 @@ function App() {
     const [isEnable, setIsEnable] = useState(false);
     const [taskOrder, setTaskOrder] = useState(tasks || {});
     const [tasksTest, setTasks] = useState();
-    const [tasksUpdate, setTaskUpdate] = useState();
     const [item, setItem] = useLocalStorage('test');
 
     useEffect(() => {
@@ -62,6 +63,23 @@ function App() {
         const data = JSON.parse(item);
         setTaskOrder(data);
     }, [item]);
+
+    useEffect(() => {
+        api.create()
+            .getBoard()
+            .then((response) => {
+                const { data } = response;
+                //         // xử trí khi thành công
+                //         console.log(response);
+                //     })
+                console.log('data ', response);
+                // setTaskOrder(data.columns);
+            })
+            .catch((error) => {
+                const { message } = error;
+                console.log('error: ', message);
+            });
+    }, []);
 
     const onDragEnd = (result) => {
         //Reorder column
@@ -106,8 +124,6 @@ function App() {
         return;
     };
 
-    console.log(tasksUpdate);
-
     return (
         <div className="flex justify-between">
             <SideBar />
@@ -123,7 +139,6 @@ function App() {
                         setIsEnable={setIsEnable}
                         setTasks={setTasks}
                         taskOrder={taskOrder}
-                        setTaskUpdate={setTaskUpdate}
                         title="Add a task"
                     />
                 )}

@@ -1,77 +1,28 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import Input from './Input';
-import StorageUtils from '../helpers/StorageUtils';
-const FloatModal = ({ setIsEnable, setTasks, taskOrder, title, task, isEditing, setEditing }) => {
+const FloatModal = ({ setIsEnable, taskOrder, title, task, isEditing, setEditing, setItem }) => {
     const [input, setInput] = useState(task?.content !== undefined ? task.content : '');
-    const addTask = (data) => {
-        let idCount = Object.keys(taskOrder.tasks).length + 1;
-        let idTask = `task-${idCount++}`;
-        const newTask = {
-            id: idTask,
-            content: data.Description,
-            date: data.Date,
-        };
-        taskOrder.tasks[idTask] = newTask;
-        taskOrder.columns['column-1'].taskIds = [...taskOrder.columns['column-1'].taskIds, idTask];
-        return taskOrder;
-    };
+    const [date, setDate] = useState(task?.dueDate !== undefined ? task.dueDate : '');
 
     const updateTask = (data) => {
         taskOrder.tasks[task.id].id = task.id;
-        taskOrder.tasks[task.id].content = data.Description;
-        taskOrder.tasks[task.id].date = data.Date;
+        taskOrder.tasks[task.id].content = data.Title;
+        taskOrder.tasks[task.id].dueDate = data.dueDate;
         return taskOrder;
     };
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm();
+    const { register, handleSubmit } = useForm();
 
-    const onSubmit = (data) => {
-        const tasks = addTask(data);
-        setTasks(tasks);
-        setIsEnable(false);
-    };
     const onSubmitUpdate = (data) => {
         const updatedTask = updateTask(data);
-        StorageUtils.setItem('test', JSON.stringify(updatedTask));
+        const jsonState = JSON.stringify(updatedTask);
+        setItem(jsonState);
         setIsEnable(false);
         setEditing(false);
     };
 
     return (
-        <div className="h-screen w-full bg-transparent flex fixed items-center justify-center">
-            {!isEditing && (
-                <div className="max-w-lg w-full relative bg-slate-200 p-4 rounded-xl">
-                    <div className="flex justify-between">
-                        <h1 className="text-3xl">{title}</h1>
-                        <h1 className="cursor-pointer" onClick={() => setIsEnable(false)}>
-                            X
-                        </h1>
-                    </div>
-                    <div className="mt-4">
-                        <form onSubmit={handleSubmit(onSubmit)}>
-                            {/* <Input label="Title" type="text" register={register} required /> */}
-
-                            <label>Description</label>
-                            <textarea
-                                title="Description"
-                                className="h-[100px] w-full mt-1"
-                                {...register('Description', {})}
-                            />
-                            <Input label="Date" type="datetime-local" register={register} required />
-                            <input
-                                className="w-full rounded-md p-2 bg-purple-600 hover:bg-purple-700 text-white text-lg"
-                                type="submit"
-                            />
-                        </form>
-                    </div>
-                </div>
-            )}
-
+        <div className="h-full w-full bg-[rgba(71,85,105,.2)] flex fixed top-0 left-0 items-center justify-center">
             {isEditing && (
                 <div className="max-w-lg w-full relative bg-slate-200 p-4 rounded-xl">
                     <div className="flex justify-between">
@@ -82,18 +33,24 @@ const FloatModal = ({ setIsEnable, setTasks, taskOrder, title, task, isEditing, 
                     </div>
                     <div className="mt-4">
                         <form onSubmit={handleSubmit(onSubmitUpdate)}>
-                            {/* <Input label="Title" type="text" register={register} required /> */}
-
-                            <label>Description</label>
+                            <label>Title</label>
                             <textarea
-                                title="Description"
+                                title="Title"
                                 value={input}
                                 className="h-[100px] w-full mt-1"
-                                {...register('Description', {
+                                {...register('Title', {
                                     onChange: (e) => setInput(e.target.value),
                                 })}
                             />
-                            <Input label="Date" type="datetime-local" register={register} required />
+                            <input
+                                title="dueDate"
+                                type="date"
+                                value={date}
+                                className="rounded-md p-3 w-full my-2"
+                                {...register('dueDate', {
+                                    onChange: (e) => setDate(e.target.value),
+                                })}
+                            />
                             <input
                                 className="w-full rounded-md p-2 bg-purple-600 hover:bg-purple-700 text-white text-lg"
                                 type="submit"

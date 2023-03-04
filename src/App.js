@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
-import SideBar from './components/SideBar';
-import FloatModal from './components/FloatModal';
-import Column from './components/Column';
 import { DragDropContext } from 'react-beautiful-dnd';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
+
+import SideBar from './components/SideBar';
+import Column from './components/Column';
 import initialData from './initialData';
 import StorageUtils from './helpers/StorageUtils';
-import axios from 'axios';
 import api from './services/api';
+import Login from './pages/Login';
 
 const reorderColumn = (sourceCol, startIndex, endIndex, destinationCol) => {
     const newTaskIds = Array.from(sourceCol.taskIds);
@@ -33,6 +36,7 @@ const reorderColumn = (sourceCol, startIndex, endIndex, destinationCol) => {
         return newColumn;
     }
 };
+
 function useLocalStorage(key) {
     const [state, setState] = useState(localStorage.getItem(key));
     function setStorage(item) {
@@ -47,10 +51,11 @@ function App() {
         StorageUtils.setItem('test', JSON.stringify(initialData));
     }
     const tasks = JSON.parse(StorageUtils.getItem('test'));
-    const [isEnable, setIsEnable] = useState(false);
     const [taskOrder, setTaskOrder] = useState(tasks || {});
     const [tasksTest, setTasks] = useState();
     const [item, setItem] = useLocalStorage('test');
+    const [user, setUser] = useState({});
+    const [isSuccess, setSuccess] = useState(false);
 
     useEffect(() => {
         if (tasksTest !== undefined) {
@@ -59,31 +64,48 @@ function App() {
         }
     }, [tasksTest]);
 
+    const notify = () =>
+        toast('🦄 Wow so easy!', {
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: false,
+            progress: undefined,
+            theme: 'light',
+        });
+    // console.log(taskOrder);
+
+    // const calculateDate = () => {
+    //     let today = new Date().toISOString().slice(0, 10);
+    //     const startDateTask = taskOrder.tasks[id].startDate;
+    //     const dueDateTask = taskOrder.tasks[id].dueDate;
+
+    //     let currentDate = new Date(today);
+    //     let date1 = new Date(dueDateTask);
+    //     let date2 = new Date(startDateTask);
+    //     const time = Math.abs(date1 - currentDate);
+    //     const days = Math.ceil(time / (1000 * 60 * 60 * 24));
+
+    //     if (days > 1) {
+    //         console.log('Date 2 is less than Date 1', days);
+    //     } else if (days > 0 && days <= 1) {
+    //         notify();
+    //     } else {
+    //         console.log('Both Dates are same');
+    //     }
+    // };
+    // calculateDate();
+
     useEffect(() => {
         const data = JSON.parse(item);
         setTaskOrder(data);
     }, [item]);
 
-    useEffect(() => {
-        api.create()
-            .getBoard()
-            .then((response) => {
-                const { data } = response;
-                //         // xử trí khi thành công
-                //         console.log(response);
-                //     })
-                console.log('data ', response);
-                // setTaskOrder(data.columns);
-            })
-            .catch((error) => {
-                const { message } = error;
-                console.log('error: ', message);
-            });
-    }, []);
-
     const onDragEnd = (result) => {
         //Reorder column
-        const { source, destination, draggableId } = result;
+        const { source, destination } = result;
         if (!destination) return;
         if (source.droppableId === destination.droppableId && source.index === destination.index) return;
 
@@ -125,43 +147,36 @@ function App() {
     };
 
     return (
-        <div className="flex justify-between">
-            <SideBar />
-            <div className=" p-3 w-[calc(100%-192px)]">
-                <button
-                    className="bg-purple-600 w-full mt-2 text-white p-2 rounded-lg hover:bg-purple-500"
-                    onClick={() => setIsEnable((prev) => !prev)}
-                >
-                    Add new task
-                </button>
-                {isEnable && (
-                    <FloatModal
-                        setIsEnable={setIsEnable}
-                        setTasks={setTasks}
-                        taskOrder={taskOrder}
-                        title="Add a task"
-                    />
-                )}
-                <DragDropContext onDragEnd={onDragEnd}>
-                    <div className="flex">
-                        {taskOrder.columnOrder.map((columnId) => {
-                            const column = taskOrder.columns[columnId];
-                            const tasks = column.taskIds.map((taskId) => taskOrder.tasks[taskId]);
+        <>
+            {false ? (
+                <div className="flex justify-between">
+                    <SideBar user={user} />
+                    <div className=" p-3 w-full bg-[#0079bf]">
+                        <DragDropContext onDragEnd={onDragEnd}>
+                            <div className="flex">
+                                {taskOrder.columnOrder.map((columnId) => {
+                                    const column = taskOrder.columns[columnId];
+                                    const tasks = column.taskIds.map((taskId) => taskOrder.tasks[taskId]);
 
-                            return (
-                                <Column
-                                    key={column.id}
-                                    column={column}
-                                    tasks={tasks}
-                                    taskOrder={taskOrder}
-                                    setItem={setItem}
-                                />
-                            );
-                        })}
+                                    return (
+                                        <Column
+                                            key={column.id}
+                                            column={column}
+                                            tasks={tasks}
+                                            taskOrder={taskOrder}
+                                            setItem={setItem}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        </DragDropContext>
                     </div>
-                </DragDropContext>
-            </div>
-        </div>
+                    <ToastContainer />
+                </div>
+            ) : (
+                <Login setSuccess={setSuccess} setUser={setUser} />
+            )}
+        </>
     );
 }
 

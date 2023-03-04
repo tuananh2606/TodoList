@@ -2,7 +2,7 @@ import axios from 'axios';
 import StorageUtils from '../helpers/StorageUtils';
 
 // const defaultURL = "http://603fbe10d952850017605ed7.mockapi.io/";
-const defaultURL = 'https://demo0291340.mockable.io/';
+const defaultURL = 'https://demo0291340.mockable.io';
 
 const headers = {
     'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',

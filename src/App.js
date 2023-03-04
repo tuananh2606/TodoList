@@ -10,6 +10,7 @@ import initialData from './initialData';
 import StorageUtils from './helpers/StorageUtils';
 import api from './services/api';
 import Login from './pages/Login';
+import Header from './layouts/Header';
 
 const reorderColumn = (sourceCol, startIndex, endIndex, destinationCol) => {
     const newTaskIds = Array.from(sourceCol.taskIds);
@@ -75,28 +76,22 @@ function App() {
             progress: undefined,
             theme: 'light',
         });
-    // console.log(taskOrder);
+    const calculateDate = () => {
+        let today = new Date().toISOString().slice(0, 10);
+        let currentDate = new Date(today);
 
-    // const calculateDate = () => {
-    //     let today = new Date().toISOString().slice(0, 10);
-    //     const startDateTask = taskOrder.tasks[id].startDate;
-    //     const dueDateTask = taskOrder.tasks[id].dueDate;
-
-    //     let currentDate = new Date(today);
-    //     let date1 = new Date(dueDateTask);
-    //     let date2 = new Date(startDateTask);
-    //     const time = Math.abs(date1 - currentDate);
-    //     const days = Math.ceil(time / (1000 * 60 * 60 * 24));
-
-    //     if (days > 1) {
-    //         console.log('Date 2 is less than Date 1', days);
-    //     } else if (days > 0 && days <= 1) {
-    //         notify();
-    //     } else {
-    //         console.log('Both Dates are same');
-    //     }
-    // };
-    // calculateDate();
+        const vals = Object.keys(taskOrder.tasks).map((key) => taskOrder.tasks[key]);
+        vals.map((item, index) => {
+            let date1 = new Date(item.dueDate);
+            const time = Math.abs(date1 - currentDate);
+            const days = Math.ceil(time / (1000 * 60 * 60 * 24));
+            if (days > 0 && days <= 1) {
+                console.log('vao');
+                notify();
+            }
+        });
+    };
+    calculateDate();
 
     useEffect(() => {
         const data = JSON.parse(item);
@@ -125,7 +120,6 @@ function App() {
             const jsonState = JSON.stringify(newState);
             localStorage.setItem('data', jsonState);
             setItem(jsonState);
-            return;
         }
 
         const newData = reorderColumn(sourceCol, source.index, destination.index, destinationCol);
@@ -143,36 +137,38 @@ function App() {
         const jsonState = JSON.stringify(newState);
         localStorage.setItem('data', jsonState);
         setItem(jsonState);
-        return;
     };
 
     return (
         <>
-            {false ? (
-                <div className="flex justify-between">
-                    <SideBar user={user} />
-                    <div className=" p-3 w-full bg-[#0079bf]">
-                        <DragDropContext onDragEnd={onDragEnd}>
-                            <div className="flex">
-                                {taskOrder.columnOrder.map((columnId) => {
-                                    const column = taskOrder.columns[columnId];
-                                    const tasks = column.taskIds.map((taskId) => taskOrder.tasks[taskId]);
+            {isSuccess ? (
+                <>
+                    <Header />
+                    <div className="flex justify-between h-screen">
+                        <SideBar user={user} />
+                        <div className=" p-3 w-full bg-[#0079bf]">
+                            <DragDropContext onDragEnd={onDragEnd}>
+                                <div className="flex">
+                                    {taskOrder.columnOrder.map((columnId) => {
+                                        const column = taskOrder.columns[columnId];
+                                        const tasks = column.taskIds.map((taskId) => taskOrder.tasks[taskId]);
 
-                                    return (
-                                        <Column
-                                            key={column.id}
-                                            column={column}
-                                            tasks={tasks}
-                                            taskOrder={taskOrder}
-                                            setItem={setItem}
-                                        />
-                                    );
-                                })}
-                            </div>
-                        </DragDropContext>
+                                        return (
+                                            <Column
+                                                key={column.id}
+                                                column={column}
+                                                tasks={tasks}
+                                                taskOrder={taskOrder}
+                                                setItem={setItem}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            </DragDropContext>
+                        </div>
+                        <ToastContainer />
                     </div>
-                    <ToastContainer />
-                </div>
+                </>
             ) : (
                 <Login setSuccess={setSuccess} setUser={setUser} />
             )}

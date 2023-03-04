@@ -7,20 +7,8 @@ import { memo, useEffect } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 
 const Card = (props) => {
-    console.log('re - render');
     const { task, columnId, taskOrder, setItem, setEditing, setIsEnable, setTask, index } = props;
     const id = task.id;
-    const notify = () =>
-        toast('🦄 Wow so easy!', {
-            position: 'top-right',
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: false,
-            progress: undefined,
-            theme: 'light',
-        });
     // console.log(taskOrder);
     // useEffect(() => {
     //     const days = calculateDate();
@@ -29,26 +17,6 @@ const Card = (props) => {
     //         notify();
     //     }
     // }, []);
-    const calculateDate = () => {
-        let today = new Date().toISOString().slice(0, 10);
-        const startDateTask = taskOrder.tasks[id].startDate;
-        const dueDateTask = taskOrder.tasks[id].dueDate;
-
-        let currentDate = new Date(today);
-        let date1 = new Date(dueDateTask);
-        let date2 = new Date(startDateTask);
-        const time = Math.abs(date1 - currentDate);
-        const days = Math.ceil(time / (1000 * 60 * 60 * 24));
-
-        if (days > 1) {
-            console.log('Date 2 is less than Date 1', days);
-        } else if (days > 0 && days <= 1) {
-            return days;
-        } else {
-            console.log('Both Dates are same');
-        }
-    };
-    // calculateDate();
     const handleDelete = () => {
         const removeTask = taskOrder.columns[columnId].taskIds.filter((element) => {
             return element !== id;

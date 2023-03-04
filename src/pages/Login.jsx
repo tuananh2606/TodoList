@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+import StorageUtils from '../helpers/StorageUtils';
 import { users } from '../initialData';
 import { Input } from '../components/Input';
 import api from '../services/api';
@@ -8,38 +9,48 @@ const Login = ({ setSuccess, setUser }) => {
     const [userLogin, setUserLogin] = useState({
         email: '',
         password: '',
+        checked: false,
     });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // const user1 =
-        //     userLogin !== undefined
-        //         ? users.find((user) => userLogin.email === user.email && userLogin.password === user.password)
-        //         : '';
-        // if (user1) {
-        //     setUser(user1);
-        //     setSuccess(true);
-        // }
+        if (userLogin.checked) {
+            StorageUtils.setItem(
+                'user',
+                JSON.stringify({
+                    email: `${userLogin.email}`,
+                    password: `${userLogin.password}`,
+                }),
+            );
+        }
+        const user1 =
+            userLogin !== undefined
+                ? users.find((user) => userLogin.email === user.email && userLogin.password === user.password)
+                : '';
+        if (user1) {
+            setUser(user1);
+            setSuccess(true);
+        }
 
-        api.create()
-            .login(userLogin.email, userLogin.password)
-            .then((response) => {
-                const { data } = response;
-                //         // xử trí khi thành công
-                //         console.log(response);
-                //     })
-                console.log('data ', response);
-                // setTaskOrder(data.columns);
-            })
-            .catch((error) => {
-                const { message } = error;
-                console.log('error: ', message);
-            });
+        // api.create()
+        //     .login(userLogin.email, userLogin.password)
+        //     .then((response) => {
+        //         const { data } = response;
+        //         //         // xử trí khi thành công
+        //         //         console.log(response);
+        //         //     })
+        //         console.log('data ', response);
+        //         // setTaskOrder(data.columns);
+        //     })
+        //     .catch((error) => {
+        //         const { message } = error;
+        //         console.log('error: ', message);
+        //     });
     };
     const handleChange = (e) => {
         setUserLogin((prev) => ({
             ...prev,
-            [e.target.name]: e.target.value,
+            [e.target.name]: e.target.value || e.target.checked,
         }));
     };
 
@@ -64,6 +75,13 @@ const Login = ({ setSuccess, setUser }) => {
                         vakue={userLogin.password}
                         className="w-full border-[2px] border-solid"
                         placeHolder="Your Password"
+                        onChange={handleChange}
+                    />
+                    <Input
+                        type="checkbox"
+                        id="rememberme"
+                        label="Remember me?"
+                        name="checked"
                         onChange={handleChange}
                     />
                     <button
